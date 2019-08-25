@@ -9,9 +9,17 @@ const schema = buildSchema(`
       description: String!
   }
 
+  type User {
+    _id: Int!
+    name: String!
+  }
+
   type Query {
-      links: [Link!]!
+      allLinks: [Link!]!
       link(_id: Int!): Link!
+
+      allUsers: [User!]!
+      user(_id: Int!): User!
   }
 `)
 
@@ -20,9 +28,17 @@ const links = [
   { _id: 1, url: 'https://google.com', description: 'Google site' },
   { _id: 2, url: 'https://Microsoft.com', description: 'Microsoft site' },
 ]
+
+const users = [{ _id: 0, name: 'user1' }, { _id: 1, name: 'user2' }]
+
 const rootValue = {
-  links: () => links,
+  allLinks: () => links,
+  // eslint-disable-next-line no-underscore-dangle
   link: ({ _id }) => links.filter(link => link._id === _id)[0],
+
+  allUsers: () => users,
+  // eslint-disable-next-line no-underscore-dangle
+  user: ({ _id }) => users.filter(user => user._id === _id)[0],
 }
 
 const app = express()
@@ -32,4 +48,4 @@ const graphqlHTTPOptions = {
   graphiql: true,
 }
 app.use('/graphql', graphqlHTTP(graphqlHTTPOptions))
-app.listen(4000, () => console.log('server is running on port 4000'))
+app.listen(4000, () => console.log('🏃‍♂️ server is running on port 4000'))
