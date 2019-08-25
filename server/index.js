@@ -20,6 +20,7 @@ const schema = buildSchema(`
 
       allUsers: [User!]!
       user(_id: Int!): User!
+      userName(_id: Int!): String!
   }
 `)
 
@@ -39,6 +40,8 @@ const rootValue = {
   allUsers: () => users,
   // eslint-disable-next-line no-underscore-dangle
   user: ({ _id }) => users.filter(user => user._id === _id)[0],
+  // eslint-disable-next-line no-underscore-dangle
+  userName: ({ _id }) => users.filter(user => user._id === _id)[0].name,
 }
 
 const app = express()
