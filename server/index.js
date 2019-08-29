@@ -36,7 +36,13 @@ const typeDefs = `
 `
 
 const links = [
-  { id: 0, author: 0, url: 'https://example.com', description: 'example site' },
+  {
+    id: 0,
+    author: 0,
+    url: 'https://example.com',
+    description: 'example site',
+    comments: [0, 4],
+  },
   { id: 1, author: 1, url: 'https://google.com', description: 'Google site' },
 ]
 
@@ -62,12 +68,14 @@ const resolvers = {
   },
   Link: {
     author: ({ author }) => find(users, { id: author }),
-    comments: obj => {
-      console.log(`obj`, obj, find(commentsList, { parent: obj.id }))
-      // return null
-      // return comments.map(id => find(commentsList, { id }))
-      return find(commentsList, { parent: obj.id })
-    },
+    // comments: obj => {
+    //   console.log(`obj`, obj, find(commentsList, { parent: obj.id }))
+    //   // return null
+    //   // return comments.map(id => find(commentsList, { id }))
+    //   return find(commentsList, { parent: obj.id })
+    // },
+    comments: ({ comments }) =>
+      comments.map(i => find(commentsList, { id: i })),
   },
 }
 
