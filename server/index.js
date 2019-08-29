@@ -10,12 +10,21 @@ const typeDefs = `
     url: String!
     description: String
     author: User!
+    comments: [Comment]
   }
 
   type User {
     id: Int! @unique
     username: String!
     about: String
+  }
+
+  type Comment {
+    id: Int! @unique
+    parent: Comment
+    comments: [Comment]
+    author: User!
+    content: String!
   }
 
   type Query {
@@ -36,6 +45,14 @@ const users = [
   { id: 1, username: 'user2', about: 'user about2' },
 ]
 
+const commentsList = [
+  { id: 0, parent: null, author: 0, content: 'Comment 1' },
+  { id: 1, parent: 0, author: 1, content: 'Comment 2' },
+  { id: 2, parent: 1, author: 0, content: 'Comment 3' },
+  { id: 3, parent: 0, author: 2, content: 'Comment 4' },
+  { id: 4, parent: null, author: 2, content: 'Comment 5' },
+]
+
 const resolvers = {
   Query: {
     allLinks: () => links,
@@ -45,6 +62,12 @@ const resolvers = {
   },
   Link: {
     author: ({ author }) => find(users, { id: author }),
+    comments: obj => {
+      console.log(`obj`, obj, find(commentsList, { parent: obj.id }))
+      // return null
+      // return comments.map(id => find(commentsList, { id }))
+      return find(commentsList, { parent: obj.id })
+    },
   },
 }
 
