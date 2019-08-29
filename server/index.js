@@ -59,6 +59,11 @@ const commentsList = [
   { id: 4, parent: null, author: 2, content: 'Comment 5' },
 ]
 
+function getComments(commentId) {
+  const comments = commentsList.filter(comment => comment.parent === commentId)
+  return comments.length > 0 ? comments : null
+}
+
 const resolvers = {
   Query: {
     allLinks: () => links,
@@ -70,6 +75,10 @@ const resolvers = {
     author: ({ author }) => find(users, { id: author }),
     comments: ({ comments }) =>
       comments.map(i => find(commentsList, { id: i })),
+  },
+  Comment: {
+    author: ({ author }) => find(users, { id: author }),
+    comments: ({ id }) => getComments(id),
   },
 }
 
