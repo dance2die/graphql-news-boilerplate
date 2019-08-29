@@ -68,12 +68,6 @@ const resolvers = {
   },
   Link: {
     author: ({ author }) => find(users, { id: author }),
-    // comments: obj => {
-    //   console.log(`obj`, obj, find(commentsList, { parent: obj.id }))
-    //   // return null
-    //   // return comments.map(id => find(commentsList, { id }))
-    //   return find(commentsList, { parent: obj.id })
-    // },
     comments: ({ comments }) =>
       comments.map(i => find(commentsList, { id: i })),
   },
