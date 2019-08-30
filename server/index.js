@@ -163,13 +163,13 @@ const queryType = new GraphQLObjectType({
       type: new GraphQLList(userType),
       resolve: () => users,
     },
-    // user: {
-    //   type: userType,
-    //   args: {
-    //     id: GraphQLInt,
-    //   },
-    //   resolve: (_, { id }) => find(users, { id }),
-    // },
+    user: {
+      type: userType,
+      args: {
+        id: { type: GraphQLInt },
+      },
+      resolve: (_, { id }) => find(users, { id }),
+    },
   }),
 })
 
