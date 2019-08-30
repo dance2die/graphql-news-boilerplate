@@ -1,7 +1,7 @@
 import express from 'express'
 import graphqlHTTP from 'express-graphql'
 // import { buildSchema } from 'graphql'
-import { makeExecutableSchema } from 'graphql-tools'
+// import { makeExecutableSchema } from 'graphql-tools'
 import {
   GraphQLInt,
   GraphQLObjectType,
@@ -9,7 +9,6 @@ import {
   GraphQLString,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLInputObjectType,
 } from 'graphql'
 import find from 'lodash/find'
 
@@ -94,83 +93,83 @@ function getComments(commentId) {
 const userType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
-    id: { type: new GraphQLNonNull(GraphQLInt) },
-    username: { type: new GraphQLNonNull(GraphQLString) },
+    id: { type: GraphQLInt },
+    username: { type: GraphQLString },
     about: { type: GraphQLString },
   }),
 })
 
-const commentsType = new GraphQLObjectType({
-  name: 'Comments',
-  fields: () => ({
-    id: { type: new GraphQLNonNull(GraphQLInt) },
-    parent: { type: commentsType },
-    comments: {
-      type: new GraphQLList(commentsType),
-      args: {
-        id: { type: GraphQLInt },
-      },
-      resolve: (_, { id }) => getComments(id),
-    },
-    author: {
-      type: userType,
-      args: {
-        author: { type: GraphQLInt },
-      },
-      resolve: (_, { author }) => find(users, { id: author }),
-    },
-    content: {
-      type: GraphQLString,
-    },
-  }),
-})
+// const commentsType = new GraphQLObjectType({
+//   name: 'Comments',
+//   fields: () => ({
+//     id: { type: GraphQLInt },
+//     parent: { type: commentsType },
+//     comments: {
+//       type: new GraphQLList(commentsType),
+//       args: {
+//         id: { type: GraphQLInt },
+//       },
+//       resolve: (_, { id }) => getComments(id),
+//     },
+//     author: {
+//       type: userType,
+//       args: {
+//         author: { type: GraphQLInt },
+//       },
+//       resolve: (_, { author }) => find(users, { id: author }),
+//     },
+//     content: {
+//       type: GraphQLString,
+//     },
+//   }),
+// })
 
-const linkType = new GraphQLObjectType({
-  name: 'Link',
-  fields: () => ({
-    id: { type: new GraphQLNonNull(GraphQLInt) },
-    url: { type: new GraphQLNonNull(GraphQLString) },
-    description: { type: GraphQLString },
-    author: {
-      type: new GraphQLNonNull(userType),
-      args: {
-        author: { type: GraphQLInt },
-      },
-      resolve: (_, { author }) => find(users, { id: author }),
-    },
-    comments: {
-      type: new GraphQLList(commentsType),
-      resolve: (_, { comments }) =>
-        comments.map(id => find(commentsList, { id })),
-    },
-  }),
-})
+// const linkType = new GraphQLObjectType({
+//   name: 'Link',
+//   fields: () => ({
+//     id: { type: GraphQLInt },
+//     url: { type: GraphQLString },
+//     description: { type: GraphQLString },
+//     author: {
+//       type: userType,
+//       args: {
+//         author: { type: GraphQLInt },
+//       },
+//       resolve: (_, { author }) => find(users, { id: author }),
+//     },
+//     comments: {
+//       type: new GraphQLList(commentsType),
+//       resolve: (_, { comments }) =>
+//         comments.map(id => find(commentsList, { id })),
+//     },
+//   }),
+// })
 
 const queryType = new GraphQLObjectType({
   name: 'Query',
   fields: () => ({
-    allLinks: {
-      type: new GraphQLList(linkType),
-      resolve: () => links,
-    },
-    link: {
-      type: linkType,
-      args: {
-        id: new GraphQLNonNull(GraphQLInt),
-      },
-      resolve: (_, { id }) => find(links, { id }),
-    },
+    // allLinks: {
+    //   type: new GraphQLList(linkType),
+    //   resolve: () => links,
+    // },
+    // link: {
+    //   type: linkType,
+    //   args: {
+    //     id: GraphQLInt,
+    //   },
+    //   resolve: (_, { id }) => find(links, { id }),
+    // },
     allUsers: {
       type: new GraphQLList(userType),
       resolve: () => users,
     },
-    user: {
-      type: userType,
-      args: {
-        id: new GraphQLNonNull(GraphQLInt),
-      },
-      resolve: (_, { id }) => find(users, { id }),
-    },
+    // user: {
+    //   type: userType,
+    //   args: {
+    //     id: GraphQLInt,
+    //   },
+    //   resolve: (_, { id }) => find(users, { id }),
+    // },
   }),
 })
 
@@ -183,4 +182,4 @@ const graphqlHTTPOptions = {
   graphiql: true,
 }
 app.use('/graphql', graphqlHTTP(graphqlHTTPOptions))
-app.listen(4000, () => console.log('🏃‍♂️ server is running on port 4000'))
+app.listen(4000, () => console.log('server is running on port 4000'))
