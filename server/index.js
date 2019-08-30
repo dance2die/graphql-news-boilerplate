@@ -26,6 +26,7 @@ const links = [
 const users = [
   { id: 0, username: 'user1', about: 'user about1' },
   { id: 1, username: 'user2', about: 'user about2' },
+  { id: 2, username: 'user3', about: 'user about3' },
 ]
 
 const commentsList = [
@@ -99,66 +100,69 @@ const userType = new GraphQLObjectType({
   }),
 })
 
-// const commentsType = new GraphQLObjectType({
-//   name: 'Comments',
-//   fields: () => ({
-//     id: { type: GraphQLInt },
-//     parent: { type: commentsType },
-//     comments: {
-//       type: new GraphQLList(commentsType),
-//       args: {
-//         id: { type: GraphQLInt },
-//       },
-//       resolve: (_, { id }) => getComments(id),
-//     },
-//     author: {
-//       type: userType,
-//       args: {
-//         author: { type: GraphQLInt },
-//       },
-//       resolve: (_, { author }) => find(users, { id: author }),
-//     },
-//     content: {
-//       type: GraphQLString,
-//     },
-//   }),
-// })
+const commentsType = new GraphQLObjectType({
+  name: 'Comments',
+  fields: () => ({
+    id: { type: GraphQLInt },
+    parent: { type: commentsType },
+    comments: {
+      type: new GraphQLList(commentsType),
+      args: {
+        id: { type: GraphQLInt },
+      },
+      resolve: ({ id }) => getComments(id),
+    },
+    author: {
+      type: userType,
+      args: {
+        author: { type: GraphQLInt },
+      },
+      resolve: ({ author }) => find(users, { id: author }),
+    },
+    content: {
+      type: GraphQLString,
+    },
+  }),
+})
 
-// const linkType = new GraphQLObjectType({
-//   name: 'Link',
-//   fields: () => ({
-//     id: { type: GraphQLInt },
-//     url: { type: GraphQLString },
-//     description: { type: GraphQLString },
-//     author: {
-//       type: userType,
-//       args: {
-//         author: { type: GraphQLInt },
-//       },
-//       resolve: (_, { author }) => find(users, { id: author }),
-//     },
-//     comments: {
-//       type: new GraphQLList(commentsType),
-//       resolve: (_, { comments }) =>
-//         comments.map(id => find(commentsList, { id })),
-//     },
-//   }),
-// })
+const linkType = new GraphQLObjectType({
+  name: 'Link',
+  fields: () => ({
+    id: { type: GraphQLInt },
+    url: { type: GraphQLString },
+    description: { type: GraphQLString },
+    author: {
+      type: userType,
+      args: {
+        author: { type: GraphQLInt },
+      },
+      resolve: ({ author }) => find(users, { id: author }),
+      // resolve: (obj, args) => {
+      //   console.log(`Link.author resolve===>`, obj, args)
+      //   return find(users, { id: args.author })
+      // },
+    },
+    comments: {
+      type: new GraphQLList(commentsType),
+      resolve: ({ comments }) => comments.map(id => find(commentsList, { id })),
+    },
+  }),
+})
 
 const queryType = new GraphQLObjectType({
   name: 'Query',
   fields: () => ({
-    // allLinks: {
-    //   type: new GraphQLList(linkType),
-    //   resolve: () => links,
-    // },
-    // link: {
-    //   type: linkType,
-    //   args: {
-    //     id: GraphQLInt,
-    //   },
-    //   resolve: (_, { id }) => find(links, { id }),
-    // },
+    allLinks: {
+      type: new GraphQLList(linkType),
+      resolve: () => links,
+    },
+    link: {
+      type: linkType,
+      args: {
+        id: { type: GraphQLInt },
+      },
+      resolve: (_, { id }) => find(links, { id }),
+    },
     allUsers: {
       type: new GraphQLList(userType),
       resolve: () => users,
