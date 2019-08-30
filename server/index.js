@@ -2,38 +2,16 @@ import express from 'express'
 import graphqlHTTP from 'express-graphql'
 // import { buildSchema } from 'graphql'
 import { makeExecutableSchema } from 'graphql-tools'
+import {
+  GraphQLInt,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLInputObjectType,
+} from 'graphql'
 import find from 'lodash/find'
-
-const typeDefs = `
-  type Link {
-    id: Int! @unique
-    url: String!
-    description: String
-    author: User!
-    comments: [Comment]
-  }
-
-  type User {
-    id: Int! @unique
-    username: String!
-    about: String
-  }
-
-  type Comment {
-    id: Int! @unique
-    parent: Comment
-    comments: [Comment]
-    author: User!
-    content: String!
-  }
-
-  type Query {
-    allLinks: [Link]
-    link(id: Int!): Link
-    allUsers: [User]
-    user(id: Int!): User
-  }
-`
 
 const links = [
   {
@@ -64,25 +42,140 @@ function getComments(commentId) {
   return comments.length > 0 ? comments : null
 }
 
-const resolvers = {
-  Query: {
-    allLinks: () => links,
-    link: (_, { id }) => find(links, { id }),
-    allUsers: () => users,
-    user: (_, { id }) => find(users, { id }),
-  },
-  Link: {
-    author: ({ author }) => find(users, { id: author }),
-    comments: ({ comments }) =>
-      comments.map(i => find(commentsList, { id: i })),
-  },
-  Comment: {
-    author: ({ author }) => find(users, { id: author }),
-    comments: ({ id }) => getComments(id),
-  },
-}
+// const typeDefs = `
+//   type Link {
+//     id: Int! @unique
+//     url: String!
+//     description: String
+//     author: User!
+//     comments: [Comment]
+//   }
 
-const schema = makeExecutableSchema({ typeDefs, resolvers })
+//   type User {
+//     id: Int! @unique
+//     username: String!
+//     about: String
+//   }
+
+//   type Comment {
+//     id: Int! @unique
+//     parent: Comment
+//     comments: [Comment]
+//     author: User!
+//     content: String!
+//   }
+
+//   type Query {
+//     allLinks: [Link]
+//     link(id: Int!): Link
+//     allUsers: [User]
+//     user(id: Int!): User
+//   }
+// `
+
+// const resolvers = {
+//   Query: {
+//     allLinks: () => links,
+//     link: (_, { id }) => find(links, { id }),
+//     allUsers: () => users,
+//     user: (_, { id }) => find(users, { id }),
+//   },
+//   Link: {
+//     author: ({ author }) => find(users, { id: author }),
+//     comments: ({ comments }) =>
+//       comments.map(i => find(commentsList, { id: i })),
+//   },
+//   Comment: {
+//     author: ({ author }) => find(users, { id: author }),
+//     comments: ({ id }) => getComments(id),
+//   },
+// }
+
+const userType = new GraphQLObjectType({
+  name: 'User',
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLInt) },
+    username: { type: new GraphQLNonNull(GraphQLString) },
+    about: { type: GraphQLString },
+  }),
+})
+
+const commentsType = new GraphQLObjectType({
+  name: 'Comments',
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLInt) },
+    parent: { type: commentsType },
+    comments: {
+      type: new GraphQLList(commentsType),
+      args: {
+        id: { type: GraphQLInt },
+      },
+      resolve: (_, { id }) => getComments(id),
+    },
+    author: {
+      type: userType,
+      args: {
+        author: { type: GraphQLInt },
+      },
+      resolve: (_, { author }) => find(users, { id: author }),
+    },
+    content: {
+      type: GraphQLString,
+    },
+  }),
+})
+
+const linkType = new GraphQLObjectType({
+  name: 'Link',
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLInt) },
+    url: { type: new GraphQLNonNull(GraphQLString) },
+    description: { type: GraphQLString },
+    author: {
+      type: new GraphQLNonNull(userType),
+      args: {
+        author: { type: GraphQLInt },
+      },
+      resolve: (_, { author }) => find(users, { id: author }),
+    },
+    comments: {
+      type: new GraphQLList(commentsType),
+      resolve: (_, { comments }) =>
+        comments.map(id => find(commentsList, { id })),
+    },
+  }),
+})
+
+const queryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: () => ({
+    allLinks: {
+      type: new GraphQLList(linkType),
+      resolve: () => links,
+    },
+    link: {
+      type: linkType,
+      args: {
+        id: new GraphQLNonNull(GraphQLInt),
+      },
+      resolve: (_, { id }) => find(links, { id }),
+    },
+    allUsers: {
+      type: new GraphQLList(userType),
+      resolve: () => users,
+    },
+    user: {
+      type: userType,
+      args: {
+        id: new GraphQLNonNull(GraphQLInt),
+      },
+      resolve: (_, { id }) => find(users, { id }),
+    },
+  }),
+})
+
+// const schema = makeExecutableSchema({ typeDefs, resolvers })
+const schema = new GraphQLSchema({ query: queryType })
 
 const app = express()
 const graphqlHTTPOptions = {
