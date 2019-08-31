@@ -20,7 +20,13 @@ const links = [
     description: 'example site',
     comments: [0, 4],
   },
-  { id: 1, author: 1, url: 'https://google.com', description: 'Google site' },
+  {
+    id: 1,
+    author: 1,
+    url: 'https://google.com',
+    description: 'Google site',
+    comments: [1, 3],
+  },
 ]
 
 const users = [
